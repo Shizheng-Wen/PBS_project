@@ -11,9 +11,8 @@ In this approach, we develop a fully-differentiable finite element method (FEM) 
 
 Here, we consider a simplified model: a 2D wave equation. To set up a problem for solving the inverse problem using a 2D wave equation, we'll follow a simplified approach, appropriate for a basic example. The 2D wave equation you provided is:
 
-$$
-\frac{\partial^2 u}{\partial t^2} = c(x,y)^2 \Delta u
-$$
+$$\frac{\partial^2 u}{\partial t^2} = c(x,y)^2 \Delta u$$
+
 where $u$ is the wave function, $c$ is the wave speed, and the equation describes the propagation of a wave in a two-dimensional medium. 
 
 **Defect Modeling**
@@ -25,16 +24,13 @@ In the uniform medium, the $c$ will be constant throughout the medium. To simula
 - *Spatial Discretization*: we use the structured quadrilateral mesh to discretize our solution domain.
 - *Temporal Discretization*:  We use the Crank-Nicolson time-stepping scheme for the conservation of total energy.
 
-$$
-\mathbf{M}{\frac{d^2 \mathbf{U}(t)}{dt^2}+\mathbf{A}\mathbf{U}(t)=0}\\
-\mathbf{M}\frac{\mathbf{U}(j+1)-2\mathbf{U}(j)+\mathbf{U}(j-1)}{\tau^2}=-\mathbf{A}\mathbf{U}(t),\ j=0,1,2,
-\dots
-$$
+$$\mathbf{M}{\frac{d^2 \mathbf{U}(t)}{dt^2}+\mathbf{A}\mathbf{U}(t)=0}$$
+
+$$\mathbf{M}\frac{\mathbf{U}(j+1)-2\mathbf{U}(j)+\mathbf{U}(j-1)}{\tau^2}=-\mathbf{A}\mathbf{U}(t),\ j=0,1,2,\dots$$
 
 where $\mathbf{U}(t)$ is the discretized degree of freedom for the continuous solution domain. For $\mathbf{U}(-1)$, we can use the initial condition to derive: 
-$$
-\frac{d\mathbf{U}(0)}{dt}=\mathbf{V}(0) \Rightarrow \frac{\mathbf{U}(1)-\mathbf{U}(-1)}{2\tau} = \mathbf{V}(0)
-$$
+
+$$\frac{d\mathbf{U}(0)}{dt}=\mathbf{V}(0) \Rightarrow \frac{\mathbf{U}(1)-\mathbf{U}(-1)}{2\tau} = \mathbf{V}(0)$$
 
 - The stability of the simulation often depends on the relation between $\delta x$ and $\tau$, typically governed by the Courant–Friedrichs–Lewy (CFL) condition.
 
@@ -42,13 +38,12 @@ $$
 
 To best simulate the real cases, for a 2D wave simulation problem, we applied a pulse at the boundary, which is defined as follows:
 
-$$
-u(x, y, 0) = 
+$$u(x, y, 0) = 
 \begin{cases} 
 A \exp\left(-\frac{(x - x_b)^2}{2\sigma_x^2} - \frac{(y - y_c)^2}{2\sigma_y^2}\right) & \text{near } x = x_b \\
 0 & \text{elsewhere}
-\end{cases}
-$$
+\end{cases}$$
+
 where:
 - $x_b$ and $y_c$ is the boundary location.
 - $\sigma_x$ and $\sigma_y$ control the spread of the pulse along $x$ and $y$ axes, respectively.
@@ -70,7 +65,7 @@ The initial velocity is set to zero across the domain.
 
 ### Results
 
-<video src="assets/c_optimization.mp4"></video>
+![c_optimization](assets/c_optimization.gif)
 
 - The Adam optimizer was run for 1000 epochs. The corresponding loss function is as follows.
   - ![c_loss](assets/c_loss.png)
@@ -79,7 +74,7 @@ The initial velocity is set to zero across the domain.
 
 Subsequently, we conducted the forward simulation for the ground truth $c(x,y)$ and optimized $\hat{c}(x,y)$.
 
-<video src="assets/c_compare.mp4"></video>
+![u_compare](assets/u_compare.gif)
 
 You can run `$ python defect_detection.py --epoch 1000` to reproduce our results.
 
