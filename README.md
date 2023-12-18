@@ -1,76 +1,86 @@
 # PBS_project
 Differentiable Physics Solver
 
+## Experiment 1 - Defect Monitoring
 
+### Description
 
-## Goal
+In this approach, we develop a fully-differentiable finite element method (FEM) solver based on automatic differentiation from scratch (totally by ourselves) in PyTorch for solving inverse problems in wave equations. The inverse problem is the detection of a defect in a plate using sparse sensor data. 
 
-Compare the adjoint method with automatic differentiation for optimization or control problems.
+### Problem Setups
 
-## Experiments
-
-**2D Burgers' equation**: The 2D Burgers' equation is a fundamental partial differential equation from fluid mechanics. It can model various physical phenomena, including shock waves and turbulence, and it is nonlinear, which makes it interesting for such a study.
-
-The 2D Burgers' equation in its viscous form is:
+Here, we consider a simplified model: a 2D wave equation. To set up a problem for solving the inverse problem using a 2D wave equation, we'll follow a simplified approach, appropriate for a basic example. The 2D wave equation you provided is:
 
 $$
-\frac{\partial u}{\partial t} + u \frac{\partial u}{\partial x} + v \frac{\partial u}{\partial y} = \nu \left( \frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} \right) \\
-\frac{\partial v}{\partial t} + u \frac{\partial v}{\partial x} + v \frac{\partial v}{\partial y} = \nu \left( \frac{\partial^2 v}{\partial x^2} + \frac{\partial^2 v}{\partial y^2} \right)
+\frac{\partial^2 u}{\partial t^2} = c(x,y)^2 \Delta u
+$$
+where $u$ is the wave function, $c$ is the wave speed, and the equation describes the propagation of a wave in a two-dimensional medium. 
+
+**Defect Modeling**
+
+In the uniform medium, the $c$ will be constant throughout the medium. To simulate defects, we assume the wave speed in certain regions is 2 (defects) and 1 for other regions.
+
+**Discretization**
+
+- *Spatial Discretization*: we use the structured quadrilateral mesh to discretize our solution domain.
+- *Temporal Discretization*:  We use the Crank-Nicolson time-stepping scheme for the conservation of total energy.
+
+$$
+\mathbf{M}{\frac{d^2 \mathbf{U}(t)}{dt^2}+\mathbf{A}\mathbf{U}(t)=0}\\
+\mathbf{M}\frac{\mathbf{U}(j+1)-2\mathbf{U}(j)+\mathbf{U}(j-1)}{\tau^2}=-\mathbf{A}\mathbf{U}(t),\ j=0,1,2,
+\dots
 $$
 
+where $\mathbf{U}(t)$ is the discretized degree of freedom for the continuous solution domain. For $\mathbf{U}(-1)$, we can use the initial condition to derive: 
+$$
+\frac{d\mathbf{U}(0)}{dt}=\mathbf{V}(0) \Rightarrow \frac{\mathbf{U}(1)-\mathbf{U}(-1)}{2\tau} = \mathbf{V}(0)
+$$
+
+- The stability of the simulation often depends on the relation between $\delta x$ and $\tau$, typically governed by the Courant–Friedrichs–Lewy (CFL) condition.
+
+**Initial and Boundary condition**
+
+To best simulate the real cases, for a 2D wave simulation problem, we applied a pulse at the boundary, which is defined as follows:
+
+$$
+u(x, y, 0) = 
+\begin{cases} 
+A \exp\left(-\frac{(x - x_b)^2}{2\sigma_x^2} - \frac{(y - y_c)^2}{2\sigma_y^2}\right) & \text{near } x = x_b \\
+0 & \text{elsewhere}
+\end{cases}
+$$
+where:
+- $x_b$ and $y_c$ is the boundary location.
+- $\sigma_x$ and $\sigma_y$ control the spread of the pulse along $x$ and $y$ axes, respectively.
+- $A$ the desired intensity of the pulse.
+
+$A$ is set to 10. $\sigma_x$ and $\sigma_y$ can are set to be 0.1. This value can be assigned using terminal `$python defect_detection --A 10 --sigma 0.1`
+
+The initial velocity is set to zero across the domain.
+
+**Sensor Simulation**
+
+- *Sensor Placement*: Place virtual sensors at specific locations in your domain. These sensors will record the wave function $u$ at their respective positions over time.
+- *Data Acquisition*: Simulate what each sensor would record over the duration of the simulation.
+
+**Inverse Problem Setup**
+
+- *Goal*: Using the data from the sensors, the goal is to infer the wave speed distribution $c(x,y)$, particularly identifying where and how it differs from the norm (i.e., locating defects).
+- *Optimization Approach*: Utilize the differentiable FEM solver to iteratively adjust the wave speed distribution in our model to minimize the difference between the simulated sensor data and the model's predictions.
+
+### Results
+
+<video src="assets/c_optimization.mp4"></video>
+
+- The Adam optimizer was run for 1000 epochs. The corresponding loss function is as follows.
+  - ![c_loss](assets/c_loss.png)
 
 
 
-where $u$ and $v$ are the velocity components in the $x$ and $y$ directions, respectively, $\nu$ is the kinematic viscosity, and $t$ is time.
+Subsequently, we conducted the forward simulation for the ground truth $c(x,y)$ and optimized $\hat{c}(x,y)$.
 
+<video src="assets/c_compare.mp4"></video>
 
+You can run `$ python defect_detection.py --epoch 1000` to reproduce our results.
 
-**Methods:**
-
-- Adjoint methods (AJ)
-
-  - Formulate the adjoint problem for the 2D Burgers' equation. This involves defining the adjoint equations, which will be the PDEs solved backward in time.
-  - Implement the adjoint solver, ensuring it calculates the gradients with respect to the parameters.
-
-- Automatic Differentiation (AD): Finite element method and finite difference method.
-
-  - Utilize PyTorch's automatic differentiation capabilities to compute gradients of the objective function with respect to the parameters of interest. (**End to End**).
-
-  
-
-**Objective Function**: Define an objective function that you wish to minimize or maximize
-
--  velocities at a certain point in time and space
-- Integrated quantity over the whole domain or a part of it.
-- **Optimization of initial conditions that lead to a certain desired velocity profile at a later time.**
-
-
-
-**Optimization:**
-
-- Gradient-based method
-
-
-
-**Evaluation:**
-
-- Compare the performance of the automatic differentiation and adjoint method implementations in terms of 
-
-  - computation time
-  - memory usage
-  - accuracy of the gradients
-  - The effectiveness of the optimization.
-
-  
-
-## Time Line
-
-| Time Line   | AJ                              | AD                                 |
-| ----------- | ------------------------------- | ---------------------------------- |
-| 6 Nov - 12  | study the method                | prepare for the weak form residual |
-| 13 Nov - 19 | Finish the code (forward)       | Finish the code (forward)          |
-| 20 Nov - 26 | Test the experiments (backward) | Test the experiments (backward)    |
-| 27 Nov - 30 | Compare the results             | Compare the results                |
-
-
-
+ 
