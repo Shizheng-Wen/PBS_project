@@ -1,3 +1,6 @@
+"""Used to test model based on static force field
+"""
+
 import torch
 from solver import Solver
 from models import Model
@@ -5,15 +8,18 @@ import matplotlib.pyplot as plt
 import time
 
 def get_loss(model, target, keyframe, loss_fn):
-        model.compute_force()
-        density = torch.zeros((1, model.solver.res_y, model.solver.res_x))
-        vel = torch.zeros((2, model.solver.res_y+1, model.solver.res_x+1))
-        for frame in range(keyframe):
-            density, vel = model(density, vel, frame)
+    """get loss for keyframe matching and smoothness
+       need to generate target.pt and put it in data/
+    """
+    model.compute_force()
+    density = torch.zeros((1, model.solver.res_y, model.solver.res_x))
+    vel = torch.zeros((2, model.solver.res_y+1, model.solver.res_x+1))
+    for frame in range(keyframe):
+        density, vel = model(density, vel, frame)
 
-        loss_k = loss_fn(density, target)
-        loss_f = loss_fn(model.force, torch.zeros(model.force.shape))
-        return loss_k, loss_f
+    loss_k = loss_fn(density, target)
+    loss_f = loss_fn(model.force, torch.zeros(model.force.shape))
+    return loss_k, loss_f
 
 def train_loop(model, target, keyframe, loss_fn, alpha, optimizer):
     def closure():

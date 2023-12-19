@@ -4,7 +4,7 @@ from torch.functional import F
 from torch.autograd import Function
 
 class Solver(object):
-    """ Fluid solver for 2d and 3d
+    """ Fluid solver for 2d and 3d, based on homework 3
     """
     def __init__(self, grid_size):
         
@@ -47,6 +47,7 @@ class Solver(object):
             last_vy = 0.5 * (vel[1, :-1, :-1] + vel[1, 1:, :-1])
             backtrace = mgrid - torch.stack((last_vx, last_vy), dim=0)*self.dt
             
+            # normalize for grid_sample
             backtrace_normed_x = 2 * backtrace[0:1, ...] / (res_x-1) - 1
             backtrace_normed_y = 2 * backtrace[1:2,...] / (res_y-1) - 1
             backtrace_normed = torch.cat((backtrace_normed_x, backtrace_normed_y), dim=0)
@@ -124,7 +125,6 @@ class Solver(object):
             mgrid = torch.stack([x_pos, y_pos, z_pos], dim=0)
 
             # advect vx
-            # mesh grid
             last_vx = vel[0, ...]
             pad_y = (1,0,0,1,0,0)
             pad_vy = F.pad(vel[1,...], pad_y)
@@ -133,7 +133,7 @@ class Solver(object):
             pad_vz = F.pad(vel[2,...], pad_z)
             last_vz = 0.25 * (pad_vz[:-1, :, :-1] + pad_vz[1:, :, :-1] + pad_vz[:-1, :, 1:] + pad_vz[1:, :, 1:])
             backtrace = mgrid - torch.stack((last_vx, last_vy, last_vz), dim=0)*self.dt
-            # normalize
+
             backtrace_normed_x = 2 * backtrace[0:1, ...] / (W-1) - 1
             backtrace_normed_y = 2 * backtrace[1:2, ...] / (H-1) - 1
             backtrace_normed_z = 2 * backtrace[2:3, ...] / (D-1) - 1
@@ -420,8 +420,9 @@ class Solver(object):
 
         return div
 
-    # sparse matrix-vector mult
     def Mv(self, A, b):
+        """sparse matrix-vector multiplication
+        """
         if self.dim == 2:
             Ab = torch.zeros(b.size())
             Adiag = A[0, ...]
@@ -444,8 +445,10 @@ class Solver(object):
             Ab = Adiag*b + Aoffd*(b_pad_x[..., 2:] + b_pad_x[..., :-2] + b_pad_y[..., 2:, :] + b_pad_y[..., :-2, :] + b_pad_z[..., 2:, :, :] + b_pad_z[..., :-2, :, :])
 
         return Ab
-    # conjugate gradient (NumCSE notation)
+    # 
     def solve_lse(self, b, A, acc=1e-5, it_max=1000):
+        """conjugate gradient to solve linear system of equations (NumCSE notation)
+        """
         if self.dim == 2:
             _, res_y, res_x = A.shape
             x = torch.zeros(1, res_y, res_x)

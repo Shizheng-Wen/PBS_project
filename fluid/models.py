@@ -1,8 +1,9 @@
 import torch
 from torch.functional import F
 
-# force field
 class Model(torch.nn.Module):
+    """ static force field
+    """ 
     def __init__(self, solver, source, source_time, mac_on):
         super().__init__()
         self.solver = solver
@@ -31,8 +32,8 @@ class Model(torch.nn.Module):
 
         return density, vel
 
-# stream function
 class StreamModel(Model):
+    """ stream function"""
     def __init__(self, solver, sources, source_time, mac_on=False):
         super().__init__(solver, sources, source_time, mac_on)
         if solver.dim == 2:

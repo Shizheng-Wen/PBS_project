@@ -1,3 +1,6 @@
+"""Used to test fluid solver and generate target shape at keyframe
+"""
+
 import torch
 from solver import Solver
 import matplotlib.pyplot as plt
@@ -5,6 +8,7 @@ from ctypes import *
 import os
 cdll.LoadLibrary("pyopenvdb.cpython-311-darwin.so")
 import pyopenvdb as vdb
+
 
 def test2d(mac_on, dir=None):
     if dir != None:

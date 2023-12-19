@@ -1,3 +1,6 @@
+"""Used to test model based on stream function
+"""
+
 import torch
 from solver import Solver
 from models import StreamModel
