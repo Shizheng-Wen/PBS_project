@@ -36,7 +36,7 @@ model = Model(solver, source, source_time, mac_on)
 keyframe = 40
 target = torch.load('data/crl.pt')
 
-alpha = 0.
+alpha = 1e-3
 learning_rate = 1.
 loss_fn = torch.nn.MSELoss()
 optimizer = torch.optim.LBFGS(model.parameters(), lr=learning_rate, history_size=10, line_search_fn='strong_wolfe')

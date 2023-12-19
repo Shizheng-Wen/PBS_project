@@ -11,7 +11,7 @@ source = torch.load('data/bunny.pt')*2
 source_time = 1
 m = StreamModel(s, source, source_time)
 
-fc = torch.load('data/eth_bunny.pth')
+fc = torch.load('eth_bunny_force.pth')
 m.load_state_dict(fc)
 
 density = torch.zeros((1, 64, 64, 64))
