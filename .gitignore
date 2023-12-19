@@ -1,4 +1,4 @@
 .DS_Store
 __pycache__/*
-fluid2d/__pycache__/*
+fluid/data/*
 .gmsh_cache
