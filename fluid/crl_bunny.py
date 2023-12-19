@@ -51,9 +51,9 @@ for t in range(epochs):
     loss = loss_k + loss_f
     losses.append([loss_k.item(), loss_f.item()])
     print(t, ', loss: ', loss_k.item(), ', ', loss_f.item())
-    torch.save((model.state_dict(), keyframe), 'res.pt')
-    torch.save(losses, 'loss.pt')
-    
+    torch.save((model.state_dict(), keyframe), 'crl_bunny_res.pt')
+    torch.save(losses, 'crl_bunny_loss.pt')
+
 end = time.time()
 print('time: ', end-start, ' s')
 
